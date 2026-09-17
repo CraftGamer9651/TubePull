@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - YouTube Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background: #e53e3e;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #c53030;
+        }
+
+        .erase-btn {
+            padding: 10px 20px;
+            background: #d53f8c;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .erase-btn:hover {
+            background: #b83280;
+        }
+
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #d53f8c;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .confirm-btn {
+            padding: 12px 24px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .confirm-btn:hover {
+            background: #c53030;
+        }
+
+        .cancel-btn {
+            padding: 12px 24px;
+            background: #e2e8f0;
+            color: #4a5568;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .cancel-btn:hover {
+            background: #cbd5e0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .downloads-section {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .downloads-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .downloads-table th {
+            background: #f8fafc;
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .downloads-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #2d3748;
+        }
+
+        .downloads-table tr:hover {
+            background: #f8fafc;
+        }
+
+        .user-id {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #667eea;
+            background: #edf2f7;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .filename {
+            font-weight: 500;
+            max-width: 300px;
+            word-break: break-all;
+        }
+
+        .file-size {
+            font-weight: 600;
+            color: #38a169;
+        }
+
+        .download-time {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.3s ease;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            background: #5a67d8;
+        }
+
+        .no-downloads {
+            text-align: center;
+            padding: 60px 30px;
+            color: #718096;
+        }
+
+        .no-downloads h3 {
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .downloads-table {
+                font-size: 0.9rem;
+            }
+
+            .downloads-table th,
+            .downloads-table td {
+                padding: 12px 15px;
+            }
+
+            .filename {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>🛠️ Admin Dashboard</h1>
+                <p>YouTube Downloader Administration</p>
+            </div>
+            <div class="header-actions">
+                <button onclick="showEraseModal()" class="erase-btn">🗑️ Erase All Data</button>
+                <a href="/admin/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ downloads|length }}</div>
+                <div class="stat-label">Total Downloads</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set unique_users = downloads|map(attribute='user_id')|list|unique|list %}
+                    {{ unique_users|length }}
+                </div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set total_size = 0 %}
+                    {% for download in downloads %}
+                        {% set size_num = download.size.replace(' MB', '')|float %}
+                        {% set total_size = total_size + size_num %}
+                    {% endfor %}
+                    {{ "%.1f"|format(total_size) }} MB
+                </div>
+                <div class="stat-label">Total Storage</div>
+            </div>
+        </div>
+
+        <div class="downloads-section">
+            <div class="section-header">
+                <h2>All User Downloads</h2>
+            </div>
+
+            {% if downloads %}
+                <table class="downloads-table">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Download Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for download in downloads %}
+                        <tr>
+                            <td>
+                                <span class="user-id">{{ download.user_id[:8] }}...</span>
+                            </td>
+                            <td class="filename">{{ download.filename }}</td>
+                            <td class="file-size">{{ download.size }}</td>
+                            <td class="download-time">{{ download.download_time }}</td>
+                            <td>
+                                <a href="{{ download.download_url }}" class="download-btn">Download</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="no-downloads">
+                    <h3>No Downloads Found</h3>
+                    <p>There are currently no downloads from any users.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="eraseModal" class="confirmation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚠️ Confirm Data Erasure</h3>
+                <p>This action will permanently delete ALL downloaded files from ALL users.</p>
+                <p><strong>This cannot be undone!</strong></p>
+            </div>
+            <div class="modal-buttons">
+                <button onclick="confirmErase()" class="confirm-btn">Yes, Erase All Data</button>
+                <button onclick="hideEraseModal()" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showEraseModal() {
+            document.getElementById('eraseModal').style.display = 'block';
+        }
+
+        function hideEraseModal() {
+            document.getElementById('eraseModal').style.display = 'none';
+        }
+
+        function confirmErase() {
+            // Show loading state
+            const confirmBtn = document.querySelector('.confirm-btn');
+            confirmBtn.innerHTML = 'Erasing...';
+            confirmBtn.disabled = true;
+
+            fetch('/admin/erase-all-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('All data has been erased successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+                hideEraseModal();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error occurred while erasing data');
+                hideEraseModal();
+            });
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('eraseModal');
+            if (event.target === modal) {
+                hideEraseModal();
+            }
+        }
+
+        // Auto-refresh every 30 seconds (but not when modal is open)
+        setInterval(() => {
+            if (document.getElementById('eraseModal').style.display !== 'block') {
+                location.reload();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
